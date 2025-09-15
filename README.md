@@ -32,9 +32,9 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 &thinsp; [vgg_transfer.ipynb 바로가기](vgg_transfer.ipynb)
 
-<br>
+<br><br>
 
-## 🔹VGG 16의 의의
+## 📌VGG 16의 의의
 
 ▪ VGG(Visual Geometry Group)라는 모델명은 단순히 연구팀명을 따른 것으로, 특별한 원리를 담고 있진 않음
 
@@ -88,7 +88,7 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 
 <details>
-<summary>&thinsp;VGG16 네트워크의 구조 단계별 설명을 보고싶다면 클릭!</summary>
+<summary>&thinsp;VGG16 네트워크의 구조 단계별 설명을 보고싶다면 클릭! ◄</summary>
 
 
 #### 1. 입력 (자동차 사진) [224 x 224 x 3]
@@ -137,9 +137,9 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 ---
 
 </details>
-<br>
+<br><br>
 
-## 🔹VGG16 전이학습 (Transfer Learning)
+## 📌VGG16 전이학습 (Transfer Learning)
 
 ▪ 1000개의 클래스를 분류하던 VGG16의 **출력층**을, 2개의 클래스(개 vs 고양이)만 분류하게끔 **변형**시킴 
 
@@ -200,7 +200,7 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 <br>
 
-## 🔹모델 성능 개선
+## 📌모델 성능 개선
 
 ▪ 위 결과 그래프를 보면, Training data에 대한 정확도와 손실이 오락가락하면서 불안정한 상태임
 
@@ -236,9 +236,9 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 • 과적합을 완화하고 **일반화 성능**을 개선하는 데 효과를 봄
 
-<br>
+<br><br>
 
-## 🔹[부록] CNN이란?
+## 📌[부록] CNN이란?
 
 ▪ CNN (Convolutional Neural Network, 합성곱 신경망)
 
