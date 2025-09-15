@@ -22,9 +22,15 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 &thinsp; • &thinsp;VGG16 전이학습
 
-&thinsp; • &thinsp;모델 성능 개선 (Dropout, Learning Rate 등)
+&thinsp; • &thinsp;모델 성능 개선 (Dropout, Learning Rate, EarlyStopping 등)
 
 &thinsp; • &thinsp;[부록] CNN이란
+
+<br>
+
+### 🔗소스코드 
+
+&thinsp; [vgg_transfer.ipynb 바로가기](vgg_transfer.ipynb)
 
 <br>
 
@@ -80,6 +86,11 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 <img src="images/vgg1.png" alt="VGG16 Architecture" width="800"/>
 
+
+<details>
+<summary>&thinsp;VGG16 네트워크의 구조 단계별 설명을 보고싶다면 클릭!</summary>
+
+
 #### 1. 입력 (자동차 사진) [224 x 224 x 3]
 
 − RGB 컬러 이미지를 입력으로 받음 (가로·세로 224px, 채널 3)
@@ -123,6 +134,9 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 − Softmax는 각 클래스별 확률 값을 계산하며, 그중 가장 높은 확률을 가진 클래스(자동차)로 최종 분류를 수행
 
+---
+
+</details>
 <br>
 
 ## 🔹VGG16 전이학습 (Transfer Learning)
@@ -131,4 +145,135 @@ VGG16은 ImageNet 대회(1000개 클래스, 1400만 장 이상의 이미지)에�
 
 ▪ 우선 Kaggle에서 제공하는 **Dogs vs Cats 데이터셋**을 다운받아야 함
 
-▪ Train dataset / Test dataset 나눠서 전이학습을 위한 VGG16 파라미터를 재학습시킴 (끝부분만)
+▪ 훈련 / 검증 dataset 나눠서 전이학습을 위한 VGG16 파라미터를 재학습시킴 (끝부분만)
+
+<br>
+
+### < 개·고양이 Train / Validation 데이터셋 나누기 >
+
+<img src="images/dataset.png" alt="dataset" width="600"/>
+
+• 훈련 데이터: 8005장
+
+• 검증 데이터: 2023장
+
+• Kaggle에서 제공한 데이터셋 자체가 8:2 비율로 이미 나눠져있는 상태
+
+<br>
+
+### < VGG16 전이학습 >
+
+<img src="images/code1.png" alt="code1" width="800"/>
+
+• **include_top=False** : 원래 1000개 클래스를 분류하는 FC Layer (=출력부)는 제외
+
+• **vgg_base.trainable = False** : Conv 레이어들은 훈련 중 업데이트되지 않음
+
+• 개 vs 고양이 분류를 위한 출력층( **Dense(1, sigmoid)** ) 추가
+
+• 중간에 Dense(256, relu)를 넣어 새로운 데이터셋에 맞는 학습으로 보완
+
+> [!IMPORTANT]
+> Cats vs Dogs 데이터셋을 토대로 새로운 출력층만을 학습하게 됨 <br><br>
+> Convolutional base는 그대로 두고, Fully Connected Layer만 업데이트함 <br><br>
+> 이 부분이 '전이시킨 모델'을 새로운 데이터로 fine-tuning 하는 과정
+
+<br>
+
+### < Training Process Output >
+
+<img src="images/output.png" alt="output1" width="1000"/>
+
+<br>
+
+### < 훈련/검증 정확도 및 손실 변화 >
+
+<img src="images/graph1.png" alt="graph1" width="700"/>
+
+• 왼쪽 그래프: 훈련 및 검증 데이터의 정확도(Accuracy) 변화를 Epoch별로 비교한 것
+
+• 훈련 정확도는 다소 불안정하게 변동하지만, **검증 정확도는 약 88~90% 수준**에서 안정적으로 유지됨
+
+• 오른쪽 그래프: 훈련 및 검증 데이터의 손실(Loss) 변화를 Epoch별로 비교한 것
+
+• **훈련 손실**은 다소 출렁거리는 모습을 보여 **과적합 가능성**을 시사함
+
+<br>
+
+## 🔹모델 성능 개선
+
+▪ 위 결과 그래프를 보면, Training data에 대한 정확도와 손실이 오락가락하면서 불안정한 상태임
+
+▪ 또한 Validation data와 차이가 큰 것으로 보아, 과적합 및 학습 불안정 예측됨
+
+<br>
+
+### < 개선된 모델: Dropout + 작은 학습률 + EarlyStopping 적용 >
+
+<img src="images/code2.png" alt="code2" width="700"/>
+
+• **Dropout(0.5)**: Dense layer 뉴런의 50%를 랜덤으로 OFF 시킨 후에 학습
+
+• **learning_rate=1e-4**: 파라미터 업데이트를 천천히 진행시켜, 오버슈팅(accuracy 급등락) 줄임
+
+• **EarlyStopping**: 불필요한 over-epoch 학습을 방지해 최적 성능 근처에서 자동 종료
+
+<br>
+
+### < Training Process Output >
+
+<img src="images/output2.png" alt="output2" width="1000"/>
+
+<br>
+
+### < 훈련/검증 정확도 및 손실 변화 >
+
+<img src="images/graph2.png" alt="graph2" width="700"/>
+
+• Train과 Validation 간의 차이가 적고, Validation 성능이 높아짐
+
+• Dropout과 낮은 학습률 덕분에 Loss가 두 그래프 모두 안정적으로 수렴
+
+• 과적합을 완화하고 **일반화 성능**을 개선하는 데 효과를 봄
+
+<br>
+
+## 🔹[부록] CNN이란?
+
+▪ CNN (Convolutional Neural Network, 합성곱 신경망)
+
+▪ 1980년대 일본의 후쿠시마 쿠니히코가 제안한 Neocognitron 구조가 시초
+
+▪ 손글씨 숫자 인식 (MNIST 데이터셋) 문제에 CNN을 적용한 **LeNet-5** 모델이 발표되면서 널리 알려짐
+
+▪ 이미지 분류, 객체 탐지, 영상 처리 등 컴퓨터비전 전반의 핵심 아키텍처
+
+<br>
+
+### ① 합성곱(Convolution)의 기본 원리
+
+▪ CNN은 이미지의 **국소적인 특징**(local feature)을 잡아내기 위해 작은 크기의 <strong>필터(=Kernel)</strong>를 <br> 입력 이미지 위에서 슬라이딩하며 곱셈 및 덧셈 연산을 수행함 => 그 결과 feature map 도출
+
+<img src="images/cnn_desc.png" alt="cnn1" width="1000"/>
+
+<br>
+
+### ② 필터와 입력의 관계 (Channel 개념)
+
+▪ 컬러 이미지는 보통 RGB 3채널(224×224×3) 형태임
+
+▪ 따라서 필터도 입력 **이미지의 두께(=채널 수)에 맞춰서** 만들어져야 함
+
+<img src="images/cnn_desc2.png" alt="cnn2" width="1000"/>
+
+<br>
+
+### ③ 출력과 채널 수 변화
+
+▪ 입력 (224×224×3)에 Conv(3×3, 64 filters)를 적용한다고 치면, 출력은 (224×224×64)
+
+▪ 이 출력된 feature map 64장은 곧 **다음 층의 입력**이 됨
+
+▪ 따라서 다음 층은 **입력 채널 수가 64개**가 되고, 새로운 필터 집합(128개) 시 출력은 (224×224×128)이 됨
+
+<img src="images/cnn_desc3.png" alt="cnn3" width="1000"/>
